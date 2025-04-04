@@ -361,15 +361,15 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
                     }
 
                     // Images
-                    $product_image_gallery = isset($meta_data['_product_image_gallery'][0]) ? $meta_data['_product_image_gallery'][0] : false;
+                    $product_image_gallery = isset($meta_data['_product_image_gallery'][0]) ? $meta_data['_product_image_gallery'][0] : '';
                     $images = array(); // Ensure $images is always an array
-                    if (!empty($product_image_gallery)) {
-                        if (is_serialized($product_image_gallery)) {
-                            $unserialized_gallery = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($product_image_gallery);
-                            $images = is_array($unserialized_gallery) ? $unserialized_gallery : explode(',', $unserialized_gallery);
-                        } else {
-                            $images = explode(',', $product_image_gallery);
-                        }
+                    if (is_serialized($product_image_gallery)) { 
+                        $images = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($product_image_gallery);
+                        if( ! is_array( $images ) ) { 
+                            $images = explode(',', $product_image_gallery); 
+                        } 
+                    } else {
+                        $images = is_string($product_image_gallery) ? explode(',', $product_image_gallery) : array();
                     }
                     $results = array();
                     if ($images) {

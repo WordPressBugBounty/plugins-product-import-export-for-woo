@@ -4,7 +4,7 @@ Tags: product export, product import, CSV import export, woocommerce product imp
 Requires at least: 3.0.1
 Tested up to: 6.7.2
 Requires PHP: 5.6
-Stable tag: 2.5.2
+Stable tag: 2.5.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -235,6 +235,8 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 
 
 == CHANGELOG ==
+= 2.5.3 2025-04-04 =
+* [Fix] - Issues with exporting the gallery images.
 = 2.5.2 2025-04-04 =
 * [Fix] - Missing gallery images while product export.
 * [Compatibility] - Tested OK with WooCommerce 9.7.1
@@ -714,6 +716,5 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 
 == Upgrade Notice ==
 
-= 2.5.2 =
-* [Fix] - Missing gallery images while product export.
-* [Compatibility] - Tested OK with WooCommerce 9.7.1
+= 2.5.3 =
+* [Fix] - Issues with exporting the gallery images.
