@@ -13,14 +13,19 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
 
         global $wpdb;
       
-        $delimiter = !empty($_POST['delimiter']) ? $_POST['delimiter'] : ','; // WPCS: CSRF ok, input var ok.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing
+        $delimiter = !empty($_POST['delimiter']) ? wp_kses_post( wp_unslash($_POST['delimiter']) ) : ','; // WPCS: CSRF ok, input var ok.
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$csv_columns = include_once( __DIR__ . '/../data/data-product-post-columns.php' );
 		$csv_columns = array_combine(array_keys($csv_columns), array_keys($csv_columns));
 		$standard_meta_columns = array_keys(array_slice($csv_columns, 12));
 		$csv_columns = self::wt_iew_get_product_columns($csv_columns);
-        $user_columns_name = !empty($_POST['columns_name']) ? wc_clean($_POST['columns_name']) : $csv_columns;
-        $export_columns = !empty($_POST['columns']) ? wc_clean($_POST['columns']) : array();
+
+        // phpcs:disable WordPress.Security.NonceVerification.Missing
+		$user_columns_name = !empty($_POST['columns_name']) ? array_map('sanitize_text_field', wp_unslash($_POST['columns_name'])) : $csv_columns;
+		$export_columns = !empty($_POST['columns']) ? array_map('sanitize_text_field', wp_unslash($_POST['columns'])) : array();
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
 
 
         $product_taxonomies = self::wt_get_product_ptaxonomies();
@@ -31,21 +36,23 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
         $export_images_zip = false;
 
         $wpdb->hide_errors();
+        // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
         @set_time_limit(0);
         if (function_exists('apache_setenv'))
             @apache_setenv('no-gzip', 1);
-
+        // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
         @ini_set('zlib.output_compression', 0);
         @ob_end_clean(); // to prevent issue that unidentified characters when opened in MS-Excel in some servers
 
 
 
-        $file_name = apply_filters('wt_iew_product_bulk_export_product_filename', 'product_export_' . date('Y-m-d-h-i-s') . '.csv');
+        $file_name = apply_filters('wt_iew_product_bulk_export_product_filename', 'product_export_' . gmdate('Y-m-d-h-i-s') . '.csv');
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename=' . $file_name);
         header('Pragma: no-cache');
         header('Expires: 0');
 
+        //phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
         $fp = fopen('php://output', 'w');
 
 
@@ -95,6 +102,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
         $row = apply_filters('wt_iew_alter_product_bulk_export_csv_columns', $row);
         $row = array_map('Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export::wrap_column', $row);
 
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
         fwrite($fp, implode($delimiter, $row) . "\n");
         $header_row = $row;
         unset($row);
@@ -102,9 +110,10 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
         $csv_columns = self::wt_array_walk($csv_columns, 'meta:'); // Remove string 'meta:' from keys and values, YOAST support
         $export_columns = self::wt_array_walk($export_columns, 'meta:'); // Remove string 'meta:' from keys and values, YOAST support
 
-
+        // phpcs:disable Squiz.PHP.DiscouragedFunctions.Discouraged
         ini_set('max_execution_time', -1);
         ini_set('memory_limit', -1);
+        // phpcs:enable Squiz.PHP.DiscouragedFunctions.Discouraged
 
 
 		$args = array(
@@ -154,8 +163,8 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
                         continue;
                     }
 
-                    $meta_value = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($value[0]); 
-                    // Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe
+                    $meta_value = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($value[0]); 
+                    // Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe
 
                     if (is_array($meta_value)) {
                         $meta_value = json_encode($meta_value);
@@ -185,7 +194,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
                 // Product attributes
                 if (isset($meta_data['_product_attributes'][0])) {
 
-                    $attributes = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($meta_data['_product_attributes'][0]);
+                    $attributes = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($meta_data['_product_attributes'][0]);
                     if (!empty($attributes) && is_array($attributes)) {
                         foreach ($attributes as $key => $attribute) {
                             if (!$key) {
@@ -217,7 +226,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
                             }
 
                             $attribute_data = $attribute['position'] . '|' . $attribute['is_visible'] . '|' . $attribute['is_variation'];
-                            $_default_attributes = isset($meta_data['_default_attributes'][0]) ? Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($meta_data['_default_attributes'][0]) : '';
+                            $_default_attributes = isset($meta_data['_default_attributes'][0]) ? Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($meta_data['_default_attributes'][0]) : '';
 
                             if (is_array($_default_attributes)) {
                                 // $_default_attribute = isset($_default_attributes[$key]) ? $_default_attributes[$key] : '';
@@ -309,7 +318,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
                             $product_image_gallery = isset($meta_data['_product_image_gallery'][0]) ? $meta_data['_product_image_gallery'][0] : '';
                             $images = array(); // Ensure $images is always an array
                             if (is_serialized($product_image_gallery)) { 
-                                $images = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($product_image_gallery);
+                                $images = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($product_image_gallery);
                                 if( ! is_array( $images ) ) { 
                                     $images = explode(',', $product_image_gallery); 
                                 } 
@@ -354,7 +363,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
                         if ('file_paths' == $column || 'downloadable_files' == $column) {
                             $file_paths_to_export = array();
                             if (!function_exists('wc_get_filename_from_url')) {
-                                $file_paths = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($meta_data['_file_paths'][0]);
+                                $file_paths = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($meta_data['_file_paths'][0]);
 
                                 if ($file_paths) {
                                     foreach ($file_paths as $file_path) {
@@ -365,7 +374,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
                                 $file_paths_to_export = implode(' | ', $file_paths_to_export);
                                 $row[] = self::format_data($file_paths_to_export);
                             } elseif (isset($meta_data['_downloadable_files'][0])) {
-                                $file_paths = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($meta_data['_downloadable_files'][0]);
+                                $file_paths = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($meta_data['_downloadable_files'][0]);
 
                                 if (is_array($file_paths) || is_object($file_paths)) {
                                     foreach ($file_paths as $file_path) {
@@ -543,6 +552,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
                 // Add to csv
                 $row = array_map('Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export::wrap_column', $row);
 
+                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
                 fwrite($fp, implode($delimiter, $row) . "\n");
                 unset($row);
             }
@@ -550,6 +560,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
 
 
 
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
         fclose($fp);
         exit;
     }
@@ -647,7 +658,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
         switch ($meta) {
             case '_sale_price_dates_from' :
             case '_sale_price_dates_to' :
-                return $meta_value ? date('Y-m-d', $meta_value) : '';
+                return $meta_value ? gmdate('Y-m-d', $meta_value) : '';
                 break;
             case '_upsell_ids' :
             case '_crosssell_ids' :
@@ -691,6 +702,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
     public static function get_all_product_attributes($post_type = 'product') {
         global $wpdb;
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $results = $wpdb->get_col($wpdb->prepare(
                         "SELECT DISTINCT pm.meta_value
             FROM {$wpdb->postmeta} AS pm
@@ -705,7 +717,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Bulk_Export {
 
         if (!empty($results)) {
             foreach ($results as $_product_attributes) {
-                $attributes = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($_product_attributes);
+                $attributes = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($_product_attributes);
                 if (!empty($attributes) && is_array($attributes)) {
                     foreach ($attributes as $key => $attribute) {
                         if (!$key) {

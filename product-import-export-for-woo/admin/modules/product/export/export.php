@@ -34,6 +34,8 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
 		$exp_stock_status = !empty($form_data['filter_form_data']['wt_iew_stock_status']) ? $form_data['filter_form_data']['wt_iew_stock_status'] : '';
 		
         $prod_categories = !empty($form_data['filter_form_data']['wt_iew_product_categories']) ? $form_data['filter_form_data']['wt_iew_product_categories'] : array();
+        $prod_brands = !empty($form_data['filter_form_data']['wt_iew_product_brand']) ? $form_data['filter_form_data']['wt_iew_product_brand'] : array();
+
         $prod_tags = !empty($form_data['filter_form_data']['wt_iew_product_tags']) ? $form_data['filter_form_data']['wt_iew_product_tags'] : array();
         $prod_types = !empty($form_data['filter_form_data']['wt_iew_product_types']) ? $form_data['filter_form_data']['wt_iew_product_types'] : array();
         $prod_status = !empty($form_data['filter_form_data']['wt_iew_product_status']) ? $form_data['filter_form_data']['wt_iew_product_status'] : array();
@@ -44,7 +46,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
         $export_limit = !empty($form_data['filter_form_data']['wt_iew_limit']) ? intval($form_data['filter_form_data']['wt_iew_limit']) : 999999999; //user limit
         $current_offset = !empty($form_data['filter_form_data']['wt_iew_offset']) ? intval($form_data['filter_form_data']['wt_iew_offset']) : 0; //user offset
 
-        $batch_count = !empty($form_data['advanced_form_data']['wt_iew_batch_count']) ? $form_data['advanced_form_data']['wt_iew_batch_count'] : Wt_Import_Export_For_Woo_Basic_Common_Helper::get_advanced_settings('default_export_batch');
+        $batch_count = !empty($form_data['advanced_form_data']['wt_iew_batch_count']) ? $form_data['advanced_form_data']['wt_iew_batch_count'] : Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::get_advanced_settings('default_export_batch');
         $batch_count = apply_filters('wt_woocommerce_csv_export_limit_per_request', $batch_count); //ajax batch limit
 
         $this->export_children_sku = (!empty($form_data['advanced_form_data']['wt_iew_export_children_sku'] ) && $form_data['advanced_form_data']['wt_iew_export_children_sku'] == 'Yes') ? true : false;
@@ -100,6 +102,11 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
                 $args['category'] = $prod_categories;
             }
 
+            if ( ! empty( $prod_brands ) ) {
+                $this->apply_brand_filter( $args, $prod_brands );
+            }
+            
+
             if (!empty($prod_tags)) {
                 $args['tag'] = $prod_tags;
             }
@@ -109,6 +116,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
             }
 
             if (!empty($exclude_products)) {
+                // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- Required for export functionality
                 $args['exclude'] = $exclude_products;
             }
 			
@@ -117,8 +125,21 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
             }
 			
 			// Export all language products if WPML is active and the language selected is all.
-			if ( function_exists('icl_object_id') && isset( $_SERVER["HTTP_REFERER"] ) && strpos($_SERVER["HTTP_REFERER"], 'lang=all') !== false ) {
-				 $args['suppress_filters'] = true;
+			if ( function_exists('icl_object_id') && isset( $_SERVER["HTTP_REFERER"] ) && strpos( sanitize_text_field( wp_unslash( $_SERVER["HTTP_REFERER"] ) ), 'lang=all') !== false ) {
+				// Allow customers to override WPML behavior with suppress_filters if needed
+				// Usage: add_filter('wt_iew_wpml_use_suppress_filters', '__return_true');
+				$use_suppress_filters = apply_filters('wt_iew_wpml_use_suppress_filters', false);
+				
+				if ( $use_suppress_filters ) {
+					// Customer override: Use suppress_filters (not recommended for VIP)
+                    // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters	 -- runs only if user overrides the default behavior
+					$args['suppress_filters'] = true;
+				} else {
+					// Default: Use WPML filter to include all languages without affecting global language
+					add_filter('wpml_query_language', function($language) {
+						return 'all';
+					});
+				}
 			}
 			
             $args = apply_filters("woocommerce_csv_product_export_args", $args);
@@ -158,7 +179,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
             'data' => $product_array,
         );
 		if( 0 == $batch_offset && 0 == $total_products ){
-				$return_products['no_post'] = __( 'Nothing to export under the selected criteria. Please check if any supported product type ( simple, grouped or external ) is available in the shop or try adjusting the filters.' );
+				$return_products['no_post'] = __( 'Nothing to export under the selected criteria. Please check if any supported product type ( simple, grouped or external ) is available in the shop or try adjusting the filters.', 'product-import-export-for-woo');
 		} 
 		return $return_products;
 
@@ -168,12 +189,12 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
 
         $export_columns = $this->parent_module->get_selected_column_names();
         
-        $post_columns = Wt_Import_Export_For_Woo_Basic_Product::get_product_post_columns();
+        $post_columns = Wt_Import_Export_For_Woo_Product_Basic_Product::get_product_post_columns();
         $standard_meta_columns = array_keys(array_slice($post_columns, 12));
 
         $product = get_post($product_object->get_id());
 
-        $csv_columns = $export_columns; //Wt_Import_Export_For_Woo_Basic_Product::wt_array_walk($export_columns,'meta:'); // Remove string 'meta:' from keys and values, YOAST support
+        $csv_columns = $export_columns; //Wt_Import_Export_For_Woo_Product_Basic_Product::wt_array_walk($export_columns,'meta:'); // Remove string 'meta:' from keys and values, YOAST support
 
         $export_columns = !empty($csv_columns) ? $csv_columns : array();
         
@@ -196,7 +217,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
             }
 
             if(is_serialized($value[0])){
-                $meta_value = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($value[0]); 
+                $meta_value = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($value[0]); 
             } else {
                 $meta_value = $value[0];
             }
@@ -228,7 +249,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
         // Product attributes
         if (isset($meta_data['_product_attributes'][0])) {
 
-            $attributes = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($meta_data['_product_attributes'][0]);
+            $attributes = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($meta_data['_product_attributes'][0]);
             
             if (!empty($attributes) && is_array($attributes)) {
                 foreach ($attributes as $key => $attribute) {
@@ -263,7 +284,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
                     }
 
                     $attribute_data = $attribute['position'] . '|' . $attribute['is_visible'] . '|' . $attribute['is_variation'];
-                    $_default_attributes = isset($meta_data['_default_attributes'][0]) ? Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($meta_data['_default_attributes'][0]) : ''; 
+                    $_default_attributes = isset($meta_data['_default_attributes'][0]) ? Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($meta_data['_default_attributes'][0]) : ''; 
 
                     if (is_array($_default_attributes)) {
                         $default_attribute = isset($_default_attributes[$key_to_find_default_attribute]) ? $_default_attributes[$key_to_find_default_attribute] : '';                        
@@ -364,7 +385,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
                     $product_image_gallery = isset($meta_data['_product_image_gallery'][0]) ? $meta_data['_product_image_gallery'][0] : '';
                     $images = array(); // Ensure $images is always an array
                     if (is_serialized($product_image_gallery)) { 
-                        $images = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($product_image_gallery);
+                        $images = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($product_image_gallery);
                         if( ! is_array( $images ) ) { 
                             $images = explode(',', $product_image_gallery); 
                         } 
@@ -410,7 +431,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
                 if ('file_paths' == $column || 'downloadable_files' == $column) {
                     $file_paths_to_export = array();
                     if (!function_exists('wc_get_filename_from_url')) {
-                        $file_paths = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($meta_data['_file_paths'][0]);
+                        $file_paths = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($meta_data['_file_paths'][0]);
 
                         if ($file_paths) {
                             foreach ($file_paths as $file_path) {
@@ -421,11 +442,11 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
                         $file_paths_to_export = implode(' | ', $file_paths_to_export);
                         $row[] = self::format_data($file_paths_to_export);
                     } elseif (isset($meta_data['_downloadable_files'][0])) {
-                        $file_paths = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_unserialize_safe($meta_data['_downloadable_files'][0]);
+                        $file_paths = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_unserialize_safe($meta_data['_downloadable_files'][0]);
 
                         if (is_array($file_paths) || is_object($file_paths)) {
                             foreach ($file_paths as $file_path) {
-                                $file_paths_to_export[] = (!empty($file_path['name']) ? $file_path['name'] : Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_wc_get_filename_from_url($file_path['file']) ) . '::' . $file_path['file'];
+                                $file_paths_to_export[] = (!empty($file_path['name']) ? $file_path['name'] : Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_wc_get_filename_from_url($file_path['file']) ) . '::' . $file_path['file'];
                             }
                         }
                         $file_paths_to_export = implode(' | ', $file_paths_to_export);
@@ -542,7 +563,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
                 if (apply_filters('wpml_setting', false, 'setup_complete')) {
                     if (in_array($column, array('wpml:language_code', 'wpml:original_product_id', 'wpml:original_product_sku'))) {
                         if ('wpml:language_code' == $column) {
-                            $original_post_language_info = Wt_Import_Export_For_Woo_Basic_Common_Helper::wt_get_wpml_original_post_language_info($product->ID);
+                            $original_post_language_info = Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::wt_get_wpml_original_post_language_info($product->ID);
                             $row[$column] = (isset($original_post_language_info->language_code) && !empty($original_post_language_info->language_code) ? $original_post_language_info->language_code : '');
                             continue;
                         }
@@ -663,6 +684,54 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
           }
 
         return $data;
+    }
+
+    /**
+     * Apply brand filter to query args - match pro plugin exactly
+     * 
+     * @param array $args Query arguments (passed by reference)
+     * @param array $brands Array of brand values
+     */
+    private function apply_brand_filter(&$args, $brands) {
+        if ( empty( $brands ) || ! is_array( $brands ) ) {
+            return;
+        }
+
+        $taxonomy_groups = array();
+        
+        // Group brands by taxonomy
+        foreach ( $brands as $brand ) {
+            // Check if brand has taxonomy prefix (format: taxonomy:slug)
+            if ( false !== strpos($brand, ':') ) {
+                list( $taxonomy, $slug ) = explode( ':', $brand, 2 );
+                $taxonomy_groups[$taxonomy][] = $slug;
+            } 
+        }
+
+        // Initialize tax_query if not set
+        if ( ! isset( $args['tax_query'] ) ) {
+            //phpcs:ignore 	WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Required for export functionality
+            $args['tax_query'] = array();
+        }
+
+        // Add brand tax queries
+        foreach ( $taxonomy_groups as $taxonomy => $brand_slugs ) {
+            if ( taxonomy_exists( $taxonomy ) ) {
+                //phpcs:ignore 	WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+                $args['tax_query'][] = array(
+                    'taxonomy' => $taxonomy,
+                    'field'    => 'slug',
+                    'terms'    => $brand_slugs,
+                    'operator' => 'IN',
+                    'include_children' => true
+                );
+            }
+        }
+
+        // Set relation for multiple tax queries
+        if ( count( $args['tax_query'] ) > 1 ) {
+            $args['tax_query']['relation'] = 'AND';
+        }
     }
 }
 }

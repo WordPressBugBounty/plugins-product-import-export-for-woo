@@ -28,8 +28,8 @@
  * @author     Webtoffee <info@webtoffee.com>
  */
 
-if (!class_exists('Wt_Import_Export_For_Woo_Basic')) {
-	class Wt_Import_Export_For_Woo_Basic
+if (!class_exists('Wt_Import_Export_For_Woo_Product_Basic')) {
+	class Wt_Import_Export_For_Woo_Product_Basic
 	{
 
 		/**
@@ -84,7 +84,7 @@ if (!class_exists('Wt_Import_Export_For_Woo_Basic')) {
 			if (defined('WT_P_IEW_VERSION')) {
 				$this->version = WT_P_IEW_VERSION;
 			} else {
-				$this->version = '2.5.6';
+				$this->version = '2.6.0';
 			}
 			$this->plugin_name = 'wt-import-export-for-woo-basic';
 			
@@ -156,11 +156,7 @@ if (!class_exists('Wt_Import_Export_For_Woo_Basic')) {
 			 * Class includes helper functions for import and export modules
 			 */
 			require_once plugin_dir_path(dirname(__FILE__)) . 'helpers/class-wt-import-export-helper.php';
-			/**
-			 * Class includes helper functions for bfcm banner
-			 */
-			require_once plugin_dir_path(dirname(__FILE__)) . 'admin/banner/class-wtier-bfcm-twenty-twenty-four.php';
-
+		
 			/**
 			* Includes cross promotion banner main class file.
 			*/
@@ -184,9 +180,25 @@ if (!class_exists('Wt_Import_Export_For_Woo_Basic')) {
 			 */
 			require_once plugin_dir_path(dirname(__FILE__)) . 'admin/modules/request_feature/request_feature.php';
 
+			/**
+			 * 	Add a notice for non-apache servers for securing folder.
+			 */
+			require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wt-non-apache-info.php';
+
+			/**
+			 * Includes the Black Friday and Cyber Monday CTA banners for 2025
+			 */
+			require_once plugin_dir_path(dirname(__FILE__)) . 'admin/banner/class-wt-bfcm-twenty-twenty-five.php';
+
+			/**
+			 * Includes the EMA banner for analytics page
+			 */
+			require_once plugin_dir_path(dirname(__FILE__)) . 'admin/banner/class-wbte-ema-banner.php';
+
+
 
 			$this->loader = new Wt_Import_Export_For_Woo_Loader_Basic();
-			$this->plugin_admin = new Wt_Import_Export_For_Woo_Admin_Basic($this->get_plugin_name(), $this->get_version());
+			$this->plugin_admin = new Wt_Import_Export_For_Woo_Product_Admin_Basic($this->get_plugin_name(), $this->get_version());
 			$this->plugin_public = new Wt_Import_Export_For_Woo_Public_Basic($this->get_plugin_name(), $this->get_version());
 		}
 
@@ -234,6 +246,16 @@ if (!class_exists('Wt_Import_Export_For_Woo_Basic')) {
 			$this->loader->add_action('admin_enqueue_scripts', $this->plugin_admin, 'enqueue_scripts');
 
 			$this->loader->add_action('export_filters', $this->plugin_admin, 'tools_wtexport_text');
+
+			/* Initiate non apache info message */
+			$this->loader->add_action('init', $this->plugin_admin, 'init_non_apache_info', 11);
+
+			/**
+			 *  Set screens to show promotional banner
+			 *
+			 *  @since 2.5.7
+			 */
+			$this->loader->add_filter( 'wt_bfcm_banner_screens', $this->plugin_admin, 'wt_bfcm_banner_screens' );
 		}
 
 		/**
@@ -306,9 +328,13 @@ if (!class_exists('Wt_Import_Export_For_Woo_Basic')) {
 		 */
 		public static function load_modules($module)
 		{
-			if (Wt_Import_Export_For_Woo_Admin_Basic::module_exists($module)) {
+			if (Wt_Import_Export_For_Woo_Product_Admin_Basic::module_exists($module)) {
 				if (!isset(self::$loaded_modules[$module])) {
-					$module_class = 'Wt_Import_Export_For_Woo_Basic_' . ucfirst($module);
+					// Convert module name to class name format (handle underscores)
+					// e.g., 'product_tags' -> 'Product_Tags', 'product' -> 'Product'
+					$module_parts = explode('_', $module);
+					$module_class_name = implode('_', array_map('ucfirst', $module_parts));
+					$module_class = 'Wt_Import_Export_For_Woo_Product_Basic_' . $module_class_name;
 					self::$loaded_modules[$module] = new $module_class;
 				}
 				return self::$loaded_modules[$module];
@@ -329,7 +355,7 @@ if (!class_exists('Wt_Import_Export_For_Woo_Basic')) {
 					$v = (isset($v[2]) ? $v[2] : '') . $v[0] . ' ' . (isset($v[1]) ? $v[1] : '');
 				}
 ?>
-				<a class="nav-tab" href="#<?php echo $k; ?>"><?php echo $v; ?></a>
+				<a class="nav-tab" href="#<?php echo esc_attr($k); ?>"><?php echo esc_html($v); ?></a>
 <?php
 			}
 		}
@@ -353,19 +379,17 @@ if (!class_exists('Wt_Import_Export_For_Woo_Basic')) {
 		 * To Check if the current date is on or between the start and end date of black friday and cyber monday banner for 2024.
 		 * @since 2.4.8
 		 */
-		public static function is_bfcm_season()
-		{
-			$start_date = new DateTime('25-NOV-2024, 12:00 AM', new DateTimeZone('Asia/Kolkata')); // Start date.
-			$current_date = new DateTime('now', new DateTimeZone('Asia/Kolkata')); // Current date.
-			$end_date = new DateTime('02-DEC-2024, 11:59 PM', new DateTimeZone('Asia/Kolkata')); // End date.
+		public static function is_bfcm_season() {
+			$start_date   = new DateTime( '17-NOV-2025, 12:00 AM', new DateTimeZone( 'Asia/Kolkata' ) ); // Start date.
+			$current_date = new DateTime( 'now', new DateTimeZone( 'Asia/Kolkata' ) ); // Current date.
+			$end_date     = new DateTime( '04-DEC-2025, 11:59 PM', new DateTimeZone( 'Asia/Kolkata' ) ); // End date.
 
-			/**
-			 * check if the date is on or between the start and end date of black friday and cyber monday banner for 2024.
-			 */
-			if ($current_date < $start_date  || $current_date >= $end_date) {
+			// Check if the date is on or between the start and end date of black friday and cyber monday banner for 2025.
+			if ( $current_date < $start_date || $current_date > $end_date ) {
 				return false;
 			}
 			return true;
 		}
+
 	}
 }

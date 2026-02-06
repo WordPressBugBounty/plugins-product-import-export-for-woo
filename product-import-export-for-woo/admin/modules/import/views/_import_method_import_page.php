@@ -4,8 +4,11 @@ if (!defined('ABSPATH')) {
 }
 ?>
 <div class="wt_iew_import_main">
-	<div id="product-type-notice" style="display:block;">
-        <?php
+	<?php
+    if ( ! empty( $this->to_import ) && 'product' === $this->to_import ) {
+    ?>
+		<div id="product-type-notice" style="display:block;">
+        	<?php
             // Define unsupported types to check
             $unsupported_types = array(
                 'variable'     => 'Variable',
@@ -60,15 +63,18 @@ if (!defined('ABSPATH')) {
                 <?php
             }
             ?>
-    </div>
+    	</div>
+    <?php 
+    }
+    ?>
 	<p><?php //echo $this->step_description;
 		?></p>
 	<div class="wt_iew_warn wt_iew_method_import_wrn" style="display:none;">
-		<?php _e('Please select an import template.'); ?>
+		<?php esc_html_e('Please select an import template.', 'product-import-export-for-woo'); ?>
 	</div>
 	<table class="form-table wt-iew-form-table">
 		<tr>
-			<th><label><?php _e('Import method'); ?></label></th>
+			<th><label><?php esc_html_e('Import method', 'product-import-export-for-woo'); ?></label></th>
 			<td colspan="2" style="width:75%;">
 				<div class="wt_iew_radio_block">
 					<?php
@@ -78,8 +84,8 @@ if (!defined('ABSPATH')) {
 					foreach ($this->import_obj->import_methods as $key => $value) {
 					?>
 						<p>
-							<input type="radio" value="<?php echo $key; ?>" id="wt_iew_import_<?php echo $key; ?>_import" name="wt_iew_import_method_import" <?php echo ($this->import_method == $key ? 'checked="checked"' : ''); ?>><b><label for="wt_iew_import_<?php echo $key; ?>_import"><?php echo $value['title']; ?></label></b> <br />
-							<span><label for="wt_iew_import_<?php echo $key; ?>_import"><?php echo $value['description']; ?></label></span>
+							<input type="radio" value="<?php echo esc_attr($key); ?>" id="wt_iew_import_<?php echo esc_attr($key); ?>_import" name="wt_iew_import_method_import" <?php echo ($this->import_method === $key ? 'checked="checked"' : ''); ?>><b><label for="wt_iew_import_<?php echo esc_attr($key); ?>_import"><?php echo esc_html($value['title']); ?></label></b> <br />
+							<span><label for="wt_iew_import_<?php echo esc_attr($key); ?>_import"><?php echo esc_html($value['description']); ?></label></span>
 						</p>
 					<?php
 					}
@@ -89,19 +95,19 @@ if (!defined('ABSPATH')) {
 		</tr>
 		<tr>
 			<div id="user-required-field-message" class="updated" style="margin-left:0px;display: none;background: #dceff4;">
-				<p><?php _e('Ensure the import file has the user\'s email ID for a successful import. Use default column name <b>user_email</b> or map the column accordingly if you are using a custom column name.'); ?></p>
+				<p><?php esc_html_e('Ensure the import file has the user\'s email ID for a successful import. Use default column name <b>user_email</b> or map the column accordingly if you are using a custom column name.', 'product-import-export-for-woo'); ?></p>
 			</div>
 		</tr>
 		<tr class="wt-iew-import-method-options wt-iew-import-method-options-template wt-iew-import-template-sele-tr" style="display:none;">
-			<th><label><?php _e('Import template'); ?></label></th>
+				<th><label><?php esc_html_e('Import template', 'product-import-export-for-woo'); ?></label></th>
 			<td>
 				<select class="wt-iew-import-template-sele">
-					<option value="0">-- <?php _e('Select a template'); ?> --</option>
+					<option value="0">-- <?php esc_html_e('Select a template', 'product-import-export-for-woo'); ?> --</option>
 					<?php
 					foreach ($this->mapping_templates as $mapping_template) {
 					?>
-						<option value="<?php echo $mapping_template['id']; ?>" <?php echo ($form_data_import_template == $mapping_template['id'] ? ' selected="selected"' : ''); ?>>
-							<?php echo $mapping_template['name']; ?>
+						<option value="<?php echo esc_attr($mapping_template['id']); ?>" <?php echo ($form_data_import_template == $mapping_template['id'] ? ' selected="selected"' : ''); ?>>
+							<?php echo esc_html($mapping_template['name']); ?>
 						</option>
 					<?php
 					}
@@ -115,13 +121,13 @@ if (!defined('ABSPATH')) {
 	<form class="wt_iew_import_method_import_form">
 		<table class="form-table wt-iew-form-table">
 			<?php
-			Wt_Import_Export_For_Woo_Basic_Common_Helper::field_generator($method_import_screen_fields, $method_import_form_data);
+			Wt_Import_Export_For_Woo_Product_Basic_Common_Helper::field_generator($method_import_screen_fields, $method_import_form_data);
 			?>
 		</table>
 		<div class="wt_iew_suite_banner">
 			<div class="wt_iew_suite_banner_border"></div>
 			<p style="font-size: 13px; font-weight: 400; margin-top: -61px;margin-left: 13px; padding: 10px 10px;">
-				<strong><?php echo esc_html__('💡 Did You Know?'); ?></strong> <?php echo esc_html__('Get advanced features like FTP/SFTP import, and support for XLSX, XLS, XML, and TXT files with our premium version.'); ?>
+				<strong><?php echo esc_html__('💡 Did You Know?', 'product-import-export-for-woo'); ?></strong> <?php echo esc_html__('Get advanced features like FTP/SFTP import, and support for XLSX, XLS, XML, and TXT files with our premium version.', 'product-import-export-for-woo'); ?>
 				<a href="<?php echo esc_url($link . WT_P_IEW_VERSION); ?>" style="color: blue;" target="_blank"><?php echo esc_html($text); ?></a>
 			</p>
 		</div>
