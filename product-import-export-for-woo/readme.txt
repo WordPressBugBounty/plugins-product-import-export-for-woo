@@ -4,7 +4,7 @@ Tags: product export, product import, CSV import export, woocommerce product imp
 Requires at least: 3.0
 Tested up to: 6.9
 Requires PHP: 5.6
-Stable tag: 2.6.0
+Stable tag: 2.6.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -61,7 +61,7 @@ With this product export import plugin, you can export and import WooCommerce pr
 * <strong>Save frequently used import/export configurations</strong> as templates and use the template for future imports and exports.
 * The plugin <strong>stores all the past imports and exports</strong> and <strong>lets you re-run</strong> them when needed.
 * <strong>Easy debugging:</strong> View and download import log for debugging purpose.
-&#9989; Tested OK with WooCommerce 10.4.3
+&#9989; Tested OK with WooCommerce 10.5.1
 
 ###COMPATIBLE PLUGINS###
 
@@ -239,15 +239,18 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 
 == Changelog ==
 
-= 2.6.0 2026-1-26 =
-* [Compatibility] – Tested OK with WooCommerce 10.4.3
-* [Update] - Updated translation template (POT file)
+= 2.6.1 2026-2-16 =
+* [Compatibility] - Tested OK with WordPress 6.9.1
+* [Compatibility] – Tested OK with WooCommerce 10.5.1
+* [Improvement] - Enhancements to the import mapping screen.
+* [Fix] - Resolved an issue where the banner reappeared after dismissal on page reload.
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/product-import-export-for-woo/trunk/changelog.txt)
 
 == Upgrade Notice ==
 
-= 2.6.0 =
-* [Compatibility] – Tested OK with WooCommerce 10.4.3
-* [Update] - Updated translation template (POT file)
+= 2.6.1 =
+* [Compatibility] - Tested OK with WordPress 6.9.1
+* [Compatibility] – Tested OK with WooCommerce 10.5.1
+* [Improvement] - Enhancements to the import mapping screen.
 

@@ -736,7 +736,7 @@ class Product_Import_Export_Review_Request
         }
 
         // Check if banner is hidden via database option (close button) or review banner is shown
-        if ( true === $wt_iew_review_banner_shown || true === get_option($banner_data['option_name'], false)) {
+        if ( true === $wt_iew_review_banner_shown || true === (bool) get_option($banner_data['option_name'], false)) {
             return;
         }
 
