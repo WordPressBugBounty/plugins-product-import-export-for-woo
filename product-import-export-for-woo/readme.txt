@@ -4,7 +4,7 @@ Tags: product export, product import, CSV import export, woocommerce product imp
 Requires at least: 3.0
 Tested up to: 6.9
 Requires PHP: 5.6
-Stable tag: 2.6.2
+Stable tag: 2.6.3
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -61,7 +61,7 @@ With this product export import plugin, you can export and import WooCommerce pr
 * <strong>Save frequently used import/export configurations</strong> as templates and use the template for future imports and exports.
 * The plugin <strong>stores all the past imports and exports</strong> and <strong>lets you re-run</strong> them when needed.
 * <strong>Easy debugging:</strong> View and download import log for debugging purpose.
-&#9989; Tested OK with WooCommerce 10.5.3
+&#9989; Tested OK with WooCommerce 10.7.0
 
 ###COMPATIBLE PLUGINS###
 
@@ -243,19 +243,18 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 
 == Changelog ==
 
-= 2.6.2 2026-03-10 =
-* [Compatibility] – Tested OK with WooCommerce 10.5.3
-* [Improvement] – Improved import/export file naming: replaced underscores with hyphens and switched timestamps to 24-hour format.
-* [Improvement] – UI tweaks.
-* [Improvement] – Improved Product Status filter.
+= 2.6.3 2026-05-06 =
+* [Compatibility] - Tested OK with WordPress 6.9.4
+* [Compatibility] – Tested OK with WooCommerce 10.7.0
+* [Fix] - Minor fixes.
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/product-import-export-for-woo/trunk/changelog.txt)
 
 == Upgrade Notice ==
 
-= 2.6.2 =
-* [Compatibility] – Tested OK with WooCommerce 10.5.3
-* [Improvement] – Improved import/export file naming: replaced underscores with hyphens and switched timestamps to 24-hour format.
-* [Improvement] – UI tweaks.
-* [Improvement] – Improved Product Status filter.
+= 2.6.3 =
+* [Compatibility] - Tested OK with WordPress 6.9.4
+* [Compatibility] – Tested OK with WooCommerce 10.7.0
+* [Fix] - Minor fixes.
+
 
