@@ -1,6 +1,10 @@
 
 == Changelog ==
 
+= 2.6.7 2026-09-02 =
+* [Compatibility] – Tested OK with WordPress 7.1
+* [Compatibility] – Tested OK with WooCommerce 11.0.1
+
 = 2.6.6 2026-08-10 =
 * [Compatibility] – Tested OK with WordPress 7.0.3
 * [Compatibility] – Tested OK with WooCommerce 11.0.0
