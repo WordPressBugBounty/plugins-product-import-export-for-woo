@@ -426,6 +426,40 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
                     continue;
                 }
 
+                // Export WC 11.1 product gallery videos
+                if ( 'product_gallery_videos' === $column ) {
+                    $video_file_names      = array();
+                    $export_video_metadata = apply_filters( 'hf_export_image_metadata_flag', true );
+                    $raw_video_gallery     = isset( $meta_data['_wc_video_gallery'][0] ) ? json_decode( $meta_data['_wc_video_gallery'][0], true ) : array();
+
+                    if ( ! empty( $raw_video_gallery ) && is_array( $raw_video_gallery ) ) {
+                        usort( $raw_video_gallery, function ( $a, $b ) {
+                            return (int) $a['position'] - (int) $b['position'];
+                        } );
+
+                        foreach ( $raw_video_gallery as $video_entry ) {
+                            $video_id = isset( $video_entry['id'] ) ? (int) $video_entry['id'] : 0;
+                            if ( ! $video_id ) {
+                                continue;
+                            }
+                            $video_url = wp_get_attachment_url( $video_id );
+                            if ( ! $video_url ) {
+                                continue;
+                            }
+                            $video_meta = '';
+                            if ( $export_video_metadata ) {
+                                $video_object = get_post( $video_id );
+                                if ( $video_object ) {
+                                    $video_meta = ' ! title : ' . $video_object->post_title . ' ! desc : ' . $video_object->post_content . ' ! caption : ' . $video_object->post_excerpt;
+                                }
+                            }
+                            $video_file_names[] = ( $this->export_images_zip ? basename( $video_url ) : $video_url ) . $video_meta;
+                        }
+                    }
+
+                    $row[ $column ] = ! empty( $video_file_names ) ? implode( ' | ', $video_file_names ) : '';
+                    continue;
+                }
 
                 // Downloadable files
                 if ('file_paths' == $column || 'downloadable_files' == $column) {

@@ -677,7 +677,14 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import
 		    'stream'      => false,
 		    'filename'    => null
 		);
-		return wp_remote_get($target_url, $def_args);
+		if ( method_exists( 'Wt_Iew_Sh', 'safe_remote_get' ) ) {
+			return Wt_Iew_Sh::safe_remote_get( $target_url, $def_args );
+		}
+
+		// Fallback when an older sibling plugin loaded Wt_Iew_Sh first and shadowed the fixed class.
+		$def_args['sslverify']          = true;
+		$def_args['reject_unsafe_urls'] = true;
+		return wp_safe_remote_get( $target_url, $def_args );
 	}
 
 	public function get_log_file_name($history_id)
@@ -1016,9 +1023,11 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import
 
 		/* important: prepare deafult mapping formdata for quick import */
 		$input_data=$reader->get_data_as_batch($file_path, $offset, $batch_count, $this, $form_data);
-		if(empty($input_data['data_arr'])){			
-			$out['msg']=__('CSV is empty', 'product-import-export-for-woo');
-            return $out;
+		if(empty($input_data['data_arr'])){
+			$msg = __('CSV is empty', 'product-import-export-for-woo');
+			Wt_Import_Export_For_Woo_Basic_History::record_failure($import_id, $msg);
+			$out['msg'] = $msg;
+			return $out;
 		}
 				
 		if(!$input_data || !is_array($input_data))

@@ -84,7 +84,7 @@ if (!class_exists('Wt_Import_Export_For_Woo_Product_Basic')) {
 			if (defined('WT_P_IEW_VERSION')) {
 				$this->version = WT_P_IEW_VERSION;
 			} else {
-				$this->version = '2.6.7';
+				$this->version = '2.6.8';
 			}	
 			$this->plugin_name = 'wt-import-export-for-woo-basic';
 			
@@ -186,9 +186,9 @@ if (!class_exists('Wt_Import_Export_For_Woo_Product_Basic')) {
 			require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wt-non-apache-info.php';
 
 			/**
-			 * Includes the Black Friday and Cyber Monday CTA banners for 2025
+			 * Includes the Black Friday and Cyber Monday CTA banners for 2026
 			 */
-			require_once plugin_dir_path(dirname(__FILE__)) . 'admin/banner/class-wt-bfcm-twenty-twenty-five.php';
+			require_once plugin_dir_path(dirname(__FILE__)) . 'admin/banner/class-wt-bfcm-twenty-twenty-six.php';
 
 			/**
 			 * Includes the Smart Coupons CTA banner for the Analytics Revenue page
@@ -376,19 +376,32 @@ if (!class_exists('Wt_Import_Export_For_Woo_Product_Basic')) {
 			return $adapters;
 		}
 		/**
-		 * To Check if the current date is on or between the start and end date of black friday and cyber monday banner for 2024.
-		 * @since 2.4.8
+		 * To Check if the current date is on or between the start and end date of black friday and cyber monday banner for 2026.
 		 */
 		public static function is_bfcm_season() {
-			$start_date   = new DateTime( '17-NOV-2025, 12:00 AM', new DateTimeZone( 'Asia/Kolkata' ) ); // Start date.
+			$start_date   = new DateTime( '11-NOV-2026, 12:00 AM', new DateTimeZone( 'Asia/Kolkata' ) ); // Start date.
 			$current_date = new DateTime( 'now', new DateTimeZone( 'Asia/Kolkata' ) ); // Current date.
-			$end_date     = new DateTime( '04-DEC-2025, 11:59 PM', new DateTimeZone( 'Asia/Kolkata' ) ); // End date.
+			$end_date     = new DateTime( '04-DEC-2026, 11:59 PM', new DateTimeZone( 'Asia/Kolkata' ) ); // End date.
 
-			// Check if the date is on or between the start and end date of black friday and cyber monday banner for 2025.
+			// Check if the date is on or between the start and end date of black friday and cyber monday banner for 2026.
 			if ( $current_date < $start_date || $current_date > $end_date ) {
 				return false;
 			}
 			return true;
+		}
+
+		/**
+		 * Whether the 2026 BFCM campaign window has fully ended (current date is past the end date).
+		 *
+		 * Returns false while the window is still in the future or active. The banner class uses this
+		 * to decide when to persist a one-way "expired" state so the date comparison is skipped on
+		 * subsequent requests — without that guard, a pre-start visit would silence the banner before
+		 * the campaign begins.
+		 */
+		public static function is_bfcm_season_ended() {
+			$current_date = new DateTime( 'now', new DateTimeZone( 'Asia/Kolkata' ) );
+			$end_date     = new DateTime( '04-DEC-2026, 11:59 PM', new DateTimeZone( 'Asia/Kolkata' ) );
+			return $current_date > $end_date;
 		}
 
 	}

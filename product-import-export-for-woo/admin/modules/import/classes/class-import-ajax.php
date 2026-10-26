@@ -131,7 +131,7 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import_Ajax
 			}
 			$is_file_type_allowed=false;
 			$uploaded_file_name=isset($_FILES['wt_iew_import_file']['name']) ? sanitize_file_name(wp_unslash($_FILES['wt_iew_import_file']['name'])) : '';
-			$ext=isset($uploaded_file_name) ? pathinfo($uploaded_file_name, PATHINFO_EXTENSION) : '';
+			$ext=isset($uploaded_file_name) ? strtolower(pathinfo($uploaded_file_name, PATHINFO_EXTENSION)) : '';
 			
 			if(isset($this->import_obj->allowed_import_file_type_mime[$ext])) /* extension exists. */
 			{

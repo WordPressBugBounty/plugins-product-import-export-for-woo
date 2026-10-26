@@ -706,7 +706,8 @@ class Wt_Import_Export_For_Woo_Product_Basic_Export
 		$file_as=(isset($this->allowed_export_file_type[$file_as]) ? $file_as : 'csv');
 
 		
-		$generated_file_name = sanitize_file_name( $this->to_export . '-export-' . current_time('Y-m-d-H-i-s') . '.' . $file_as );
+		$random_token = wp_generate_password( 12, false );
+		$generated_file_name = sanitize_file_name( $this->to_export . '-export-' . current_time('Y-m-d-H-i-s') . '-' . $random_token . '.' . $file_as );
 
 		if($export_id==0) //first batch then create a history entry
 		{

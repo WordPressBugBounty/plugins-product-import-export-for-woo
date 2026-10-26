@@ -61,6 +61,7 @@ $post_columns = array(
 
 
     'images' => 'Images (featured and gallery)',
+    'product_gallery_videos' => 'Gallery Videos',
     "$file_path_header" => 'Downloadable file paths',
     'product_page_url' => 'Product page URL',
 	'meta:total_sales' => 'Total sales count',

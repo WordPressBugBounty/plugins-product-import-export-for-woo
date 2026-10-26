@@ -1,28 +1,28 @@
-=== Product Import Export for WooCommerce - Import Export Product CSV Suite ===
+=== Product Import Export for WooCommerce - CSV Product Importer & Exporter ===
 Contributors: webtoffee
 Tags: product export, product import, CSV import export, woocommerce product import, export woocommerce products
 Requires at least: 3.0
-Tested up to: 7.1
+Tested up to: 7.1.3
 Requires PHP: 5.6
-Stable tag: 2.6.7
+Stable tag: 2.6.8
 License: GPLv3 or later
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Import/export WooCommerce products via CSV with images, reviews, categories & tags. ChatGPT integration auto-generates missing product descriptions. 
+Import and export WooCommerce products via CSV. Bulk upload products, update stock and prices, and import or export product images.
 
 == Description ==
 
-== WooCommerce Product Import Export Plugin for CSV Imports, Exports, and Bulk Uploads ==
+== WooCommerce Product Import Export Plugin – Import, Export & Bulk Upload Products Using CSV ==
 
 Export, import, bulk upload and update your WooCommerce products (simple, grouped, external/affiliate) in a super simple way using CSV files.
 
 Use this WooCommerce product import plugin to import products to WooCommerce, export products to CSV, migrate products between WooCommerce stores, update stock and prices in bulk, and move product data such as images, gallery images, reviews, categories, tags, attributes, prices, and stock details.
  
-Inventory updates, syncing products, data filtration, and automatic column mapping are some of the key features of this product importer plugin.
+With automatic column mapping, export filters, and bulk update options, you can manage product data without manually editing individual products.
 
-With the latest update, we have integrated ChatGPT API into our plugin. Now, the plugin will automatically generate product descriptions for products with missing descriptions. Thanks to Generative AI!
-
-<strong>To import and export variable products, upgrade to the premium version of <a href="https://www.webtoffee.com/product/product-import-export-woocommerce/?utm_source=free_plugin_readme&utm_medium=product_import_export&utm_campaign=Product_import_export">WooCommerce Product Import Export</a></strong>.
+**New:** the plugin can use ChatGPT to generate product descriptions for imported products that have none.
+ 
+<strong>Need to import and export variable products. Upgrade to the premium version of <a href="https://www.webtoffee.com/product/product-import-export-woocommerce/?utm_source=free_plugin_readme&utm_medium=product_import_export&utm_campaign=Product_import_export">WooCommerce Product Import Export</a></strong>.
 
 == PRODUCT IMPORT EXPORT FOR WOOCOMMERCE - FREE IMPORT EXPORT PLUGIN ==
 
@@ -62,8 +62,8 @@ With this product export import plugin, you can export WooCommerce products and 
 * <strong>Save frequently used import/export configurations</strong> as templates and use the template for future imports and exports.
 * The plugin <strong>stores all the past imports and exports</strong> and <strong>lets you re-run</strong> them when needed.
 * <strong>Easy debugging:</strong> View and download import log for debugging purpose.
-&#9989; Tested OK with WordPress 7.1
-&#9989; Tested OK with WooCommerce 11.0.1
+&#9989; Tested OK with WordPress 7.1.3
+&#9989; Tested OK with WooCommerce 11.2.1
 &#9989; Tested OK with PHP 8.3
 
 ###COMPATIBLE PLUGINS###
@@ -88,9 +88,9 @@ Using the advanced options of the import products WooCommerce plugin, you can ea
 
 Now you can import or update the product images of multiple WooCommerce products simultaneously with ease. With the WooCommerce import products plugin, you can import/update all the gallery images of a product along with the product image, also known as the featured image.
 
-####Export Products with Images####
+####Export WooCommerce Products with Images####
 
-Quickly export products and their corresponding images with just a few clicks. The product export plugin lets you export all the product images, including featured and gallery images, making it ideal for product updates, store migration, or backups.  
+Quickly export WooCommerce products and their corresponding images with just a few clicks. The product export plugin lets you export all the product images, including featured and gallery images, making it ideal for product updates, store migration, or backups.  
 
 ####Import WooCommerce Products Categories and Assign Products to Them####
 
@@ -105,7 +105,7 @@ However, if you want to import only the product categories of a WooCommerce stor
 
 ####Filter Product Exports By Category, Stock status, and Other Criteria####
 
-Export WooCommerce products based on your requirements. You can filter the product data and export the products based on multiple data filtration criteria, such as category, tag, stock, status, product type, and more.
+Export WooCommerce products based on your requirements. You can filter the product data and export products from WooCommerce based on multiple data filtration criteria, such as category, tag, stock, status, product type, and more.
 
 <strong>How Does This WooCommerce CSV Importer Plugin Works?</strong>
 
@@ -125,7 +125,7 @@ This is to match each field of a CSV file to the field of a particular product, 
 
 You can create the CSV from scratch or export products to get the format of the CSV. You can use a spreadsheet program, such as LibreOffice, Microsoft Excel, OpenOffice, or Google Sheets, to create and modify the CSV file. Save this file with the extension ".CSV."
 
-After entering all details about products in a spreadsheet, you can import products to your WooCommerce store. With this plugin, you can also export products to CSV and download product details as a CSV.
+After entering all details about products in a spreadsheet, you can import products to your WooCommerce store. With this WooCommerce product importer plugin, you can also export products to CSV and download product details as a CSV.
 
 
 ###SETUP GUIDE - PRODUCT IMPORT EXPORT FOR WOOCOMMERCE###
@@ -179,6 +179,25 @@ See our [Privacy Policy](https://www.webtoffee.com/privacy-policy/) and [Terms &
 
 == Frequently Asked Questions ==
 
+= How do I import products into WooCommerce from a CSV file? = 
+
+Go to the plugin's Import screen, choose Product, upload your CSV, map the columns to product fields, and start the import. Export a few products first if you want a CSV with the correct format. See [how to import and export WooCommerce products](https://www.webtoffee.com/import-export-woocommerce-products-basic/).
+
+= How do I export WooCommerce products to CSV? =
+
+Open the Export screen, choose Product, set any filters, map the columns you want, and export. The CSV downloads when the export finishes.
+
+= How do I bulk upload products to WooCommerce? =
+
+You can bulk upload products using the WooCommerce CSV importer. Prepare a CSV file containing your product information, upload it through the plugin, map the required fields, and run the import. The plugin supports bulk uploading simple, grouped, and external/affiliate products in the free version.
+
+= How do I import WooCommerce products with images? =
+
+Add the image URLs to the image columns of your CSV and import it. The plugin imports featured and gallery images with each product. Steps are in this guide(https://www.webtoffee.com/how-to-import-woocommerce-products-with-images-from-a-csv-file/).
+
+= How do I bulk update WooCommerce product prices and stock? =
+
+Export your existing WooCommerce products to CSV, update the price or stock values in a spreadsheet, and import the modified file using the plugin. Configure the import to update existing products rather than creating duplicates.
 
 = Import of attributes not working using the WooCommerce export CSV? =
 
@@ -194,10 +213,9 @@ No, the free version of the plugin does not support variable products. To import
 
 Yes, you can import and export product images along with other details. For more information, refer to: <a rel="nofollow" href="https://www.webtoffee.com/how-to-import-woocommerce-products-with-images-from-a-csv-file/">How to import WooCommerce products with images</a>.
 
+= Which CSV editor should I use for WooCommerce product imports? =
 
-= Which is the best free CSV editor suggested? =
-
-LibreOffice.
+You can use LibreOffice, Microsoft Excel, or Google Sheets to prepare and edit product CSV files. LibreOffice is a free option. Make sure the final CSV is saved in a compatible format, preferably UTF-8.
 
 = Does this plugin support importing taxonomy and attributes to WooCommerce?
 
@@ -234,16 +252,20 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 
 == Changelog ==
 
-= 2.6.7 2026-09-02 =
-* [Compatibility] – Tested OK with WordPress 7.1
-* [Compatibility] – Tested OK with WooCommerce 11.0.1
+= 2.6.8 2026-10-26 =
+* [Compatibility] – Tested OK with WordPress 7.1.3
+* [Compatibility] – Tested OK with WooCommerce 11.2.1
+* [Fix] – Hardened URL-based imports and remote image imports against server-side request forgery (SSRF) via HTTP redirects. Reported by Sarvar.
+* [Feature] – Added product gallery video import/export support for WooCommerce 11.1.
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/product-import-export-for-woo/trunk/changelog.txt)
 
 == Upgrade Notice ==
 
-= 2.6.7 =
-* [Compatibility] – Tested OK with WordPress 7.1
-* [Compatibility] – Tested OK with WooCommerce 11.0.1
+= 2.6.8 =
+* [Compatibility] – Tested OK with WordPress 7.1.3
+* [Compatibility] – Tested OK with WooCommerce 11.2.1
+* [Fix] – Hardened URL-based imports and remote image imports against server-side request forgery (SSRF) via HTTP redirects. Reported by Sarvar.
+* [Feature] – Added product gallery video import/export support for WooCommerce 11.1.
 
 

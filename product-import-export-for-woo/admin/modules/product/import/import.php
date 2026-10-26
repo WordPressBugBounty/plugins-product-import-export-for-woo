@@ -468,11 +468,25 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
                     $this->item_data['raw_image'] = array_shift($images);
                     if (!empty($images)) {
                         $this->item_data['raw_gallery_image'] = $images;
-                    }                    
+                    }
                     unset($images);
                     continue;
                 }
-                    
+
+                if ( 'product_gallery_videos' === $column ) {
+                    $videos = $this->wt_parse_images_field( $value );
+                    if ( ! empty( $videos ) ) {
+                        $this->item_data['raw_gallery_video'] = $videos;
+                    } elseif ( $this->merge && $this->merge_empty_cells ) {
+                        // Column mapped but cell is empty with "Update even if empty values" = Yes.
+                        // Stage an explicit clear signal — empty($data['raw_gallery_video']) alone
+                        // cannot distinguish "not mapped" from "mapped and emptied".
+                        $this->item_data['raw_gallery_video'] = array( 'clear' => true );
+                    }
+                    unset( $videos );
+                    continue;
+                }
+
                 if (strstr($column, 'attribute:')) {
                     $this->wt_parse_attribute_field($value, $column);
                     continue;
@@ -746,7 +760,15 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
         
         public function wt_parse_meta_field($value,$column) {
             $meta_key = trim(str_replace('meta:', '', $column));
-                       
+
+            // _wc_video_gallery is owned by the dedicated product_gallery_videos column.
+            // Dropping it here prevents duplicate / corrupt postmeta rows when a CSV maps
+            // both columns at once (e.g. an old saved column-mapping template reused
+            // after the new column was added).
+            if ( '_wc_video_gallery' === $meta_key ) {
+                return;
+            }
+
             /**
              * Handle meta: columns for variation attributes
              */
@@ -1271,16 +1293,15 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
                        $j++;
                        continue;
                    }
-                   @list($image['key'], $image['data']) = explode(':', $current_image_detail);                                      
+                   @list($image['key'], $image['data']) = explode(':', $current_image_detail);
                    $images[trim(strtolower($image['key']))] = trim($image['data']);
                }
            }
            unset($image_details, $image_detail, $current_image_detail, $image, $image_data, $j);
-       }       
+       }
        return $images;
    }
 
-	
     /**
      * Parse download file urls, we should allow shortskus here.
      *
@@ -1502,6 +1523,8 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
             $this->set_product_data($object, $data);
                                     
             $this->set_image_data($object, $data);
+
+            $this->set_video_gallery_data( $object, $data );
 
             $this->set_meta_data($object, $data);
             $this->set_other_taxonomy_data($object, $data);
@@ -1817,8 +1840,48 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
             $product->set_gallery_image_ids(array_filter($gallery_image_ids));
         }
     }
-    
-    
+
+    /**
+     * Sideload WC 11.1 gallery videos and rebuild _wc_video_gallery meta with destination attachment IDs.
+     */
+    public function set_video_gallery_data( &$product, $data ) {
+        if ( ! isset( $data['raw_gallery_video'] ) ) {
+            return;
+        }
+
+        if ( ! empty( $data['raw_gallery_video']['clear'] ) ) {
+            delete_post_meta( $product->get_id(), '_wc_video_gallery' );
+            Wt_Import_Export_For_Woo_Basic_Logwriter::write_log( $this->parent_module->module_base, 'import', 'Cleared Gallery Videos (product_gallery_videos column emptied, Update even if empty values enabled).' );
+            return;
+        }
+
+        $video_gallery = array();
+        $position      = 1;
+
+        foreach ( $data['raw_gallery_video'] as $video_data ) {
+            if ( empty( $video_data['url'] ) ) {
+                continue;
+            }
+            Wt_Import_Export_For_Woo_Basic_Logwriter::write_log( $this->parent_module->module_base, 'import', 'Setting gallery video. URL: ' . $video_data['url'] );
+            $video_id = $this->get_attachment_id_from_url( $video_data['url'], $product->get_id(), true );
+            if ( $video_id ) {
+                $this->wt_set_attachment_data( $video_id, $video_data );
+                $video_gallery[] = array(
+                    'source_type' => 'attachment',
+                    'id'          => $video_id,
+                    'position'    => $position,
+                );
+                ++$position;
+                Wt_Import_Export_For_Woo_Basic_Logwriter::write_log( $this->parent_module->module_base, 'import', 'Gallery video attachment ID: ' . $video_id );
+            }
+        }
+
+        if ( ! empty( $video_gallery ) ) {
+            update_post_meta( $product->get_id(), '_wc_video_gallery', wp_json_encode( $video_gallery ) );
+        }
+    }
+
+
         function wt_set_attachment_data($attachment_id, $attachment_data) {
         $attachment = array(
             'ID' => $attachment_id,
@@ -1848,11 +1911,19 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
         // Ensure url is valid
         $url = str_replace(" ", '%20', $url);
         // Get the file
-        $response = wp_remote_get($url, array(
-                'timeout' => 60,
-                "user-agent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0",
-                'sslverify' => FALSE
-        ));
+        $remote_args = array(
+                'timeout'    => 60,
+                'user-agent' => 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0',
+                'sslverify'  => false,
+        );
+        if ( method_exists( 'Wt_Iew_Sh', 'safe_remote_get' ) ) {
+            $response = Wt_Iew_Sh::safe_remote_get( $url, $remote_args );
+        } else {
+            // Fallback when an older sibling plugin loaded Wt_Iew_Sh first and shadowed the fixed class.
+            $remote_args['sslverify']          = true;
+            $remote_args['reject_unsafe_urls'] = true;
+            $response = wp_safe_remote_get( $url, $remote_args );
+        }
         
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200)
             return new WP_Error('import_file_error', 'Error getting remote image');
@@ -1908,7 +1979,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
         return $upload;
     }
 
-    function get_attachment_id_from_url($url, $product_id) {
+    function get_attachment_id_from_url($url, $product_id, $allow_video = false) {
         if (empty($url)) {
             return 0;
         }
@@ -1999,11 +2070,12 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
 				$id = wp_insert_attachment($post, $upload['file'], $product_id);
 			}
  
-            if (!wp_attachment_is_image($id)) {
+            $attachment_mime = get_post_mime_type( $id );
+            if ( ! wp_attachment_is_image( $id ) && ! ( $allow_video && strstr( (string) $attachment_mime, 'video/' ) ) ) {
                 /* translators: %s: image URL */
                 Wt_Import_Export_For_Woo_Basic_Logwriter::write_log($this->parent_module->module_base, 'import', sprintf(__('Not able to attach "%s".', 'product-import-export-for-woo'), $url));
                 return;
-                
+
             }
 
             // Save attachment source for future reference.
@@ -2014,7 +2086,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
             /* translators: %s: image URL */
             Wt_Import_Export_For_Woo_Basic_Logwriter::write_log($this->parent_module->module_base, 'import', sprintf(__('Unable to use image "%s".', 'product-import-export-for-woo'), $url));
             return;
-            
+
         }
 
         return $id;

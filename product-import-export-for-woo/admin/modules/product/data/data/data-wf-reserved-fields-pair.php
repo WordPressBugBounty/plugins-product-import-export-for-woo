@@ -53,6 +53,7 @@ $post_columns =  array(
                 'product_url' => array('title'=>'External: Product URL','description'=>'Product URL if the Product is external', 'field_type' => 'alternates', 'similar_fields' => array('External URL')),
                 'button_text' => array('title'=>'External: Button text','description'=>'Buy button text for Product , if the Product is external', 'field_type' => 'alternates', 'similar_fields' => array('Button text')),
                 'images' => array('title'=>'Images/Gallery','description'=>'Image URLs seperated with &#124;'),
+                'product_gallery_videos' => array('title'=>'Gallery Videos','description'=>'Gallery video URLs separated with &#124; (WC 11.1+)'),
                 'product_page_url' => array('title'=>'Product page URL','description'=>'Product Page URL'),
                 'meta:total_sales' => array('title'=>'meta:total_sales','description'=>'Total sales for the Product'),
                 'meta:_global_unique_id' => array('title'=>'GTIN, UPC, EAN, or ISBN','description'=>'Global unique ID'),

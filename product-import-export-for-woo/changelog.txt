@@ -1,6 +1,12 @@
 
 == Changelog ==
 
+= 2.6.8 2026-10-26 =
+* [Compatibility] – Tested OK with WordPress 7.1.3
+* [Compatibility] – Tested OK with WooCommerce 11.2.1
+* [Fix] – Hardened URL-based imports and remote image imports against server-side request forgery (SSRF) via HTTP redirects. Reported by Sarvar.
+* [Feature] – Added product gallery video import/export support for WooCommerce 11.1.
+
 = 2.6.7 2026-09-02 =
 * [Compatibility] – Tested OK with WordPress 7.1
 * [Compatibility] – Tested OK with WooCommerce 11.0.1
