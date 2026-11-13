@@ -2,9 +2,9 @@
 Contributors: webtoffee
 Tags: product export, product import, CSV import export, woocommerce product import, export woocommerce products
 Requires at least: 3.0
-Tested up to: 7.1.3
-Requires PHP: 5.6
-Stable tag: 2.6.8
+Tested up to: 7.1.4
+Requires PHP: 7.4
+Stable tag: 2.6.9
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -62,8 +62,8 @@ With this product export import plugin, you can export WooCommerce products and 
 * <strong>Save frequently used import/export configurations</strong> as templates and use the template for future imports and exports.
 * The plugin <strong>stores all the past imports and exports</strong> and <strong>lets you re-run</strong> them when needed.
 * <strong>Easy debugging:</strong> View and download import log for debugging purpose.
-&#9989; Tested OK with WordPress 7.1.3
-&#9989; Tested OK with WooCommerce 11.2.1
+&#9989; Tested OK with WordPress 7.1.4
+&#9989; Tested OK with WooCommerce 11.2.2
 &#9989; Tested OK with PHP 8.3
 
 ###COMPATIBLE PLUGINS###
@@ -252,20 +252,18 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 
 == Changelog ==
 
-= 2.6.8 2026-10-26 =
-* [Compatibility] – Tested OK with WordPress 7.1.3
-* [Compatibility] – Tested OK with WooCommerce 11.2.1
-* [Fix] – Hardened URL-based imports and remote image imports against server-side request forgery (SSRF) via HTTP redirects. Reported by Sarvar.
-* [Feature] – Added product gallery video import/export support for WooCommerce 11.1.
+= 2.6.9 2026-11-13 =
+* [Fix] - Security: hardened CSV export to prevent row injection on re-import via crafted order data. Reported by J Rose (Cavid Gulaliyev).
+* [Update] - Bumped minimum PHP requirement to 7.4.
+* [Compatibility] – Tested OK with WordPress 7.1.4.
+* [Compatibility] – Tested OK with WooCommerce 11.3.0.
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/product-import-export-for-woo/trunk/changelog.txt)
 
 == Upgrade Notice ==
 
-= 2.6.8 =
-* [Compatibility] – Tested OK with WordPress 7.1.3
-* [Compatibility] – Tested OK with WooCommerce 11.2.1
-* [Fix] – Hardened URL-based imports and remote image imports against server-side request forgery (SSRF) via HTTP redirects. Reported by Sarvar.
-* [Feature] – Added product gallery video import/export support for WooCommerce 11.1.
-
-
+= 2.6.9 =
+* [Fix] - Security: hardened CSV export to prevent row injection on re-import via crafted order data. Reported by J Rose (Cavid Gulaliyev).
+* [Update] - Bumped minimum PHP requirement to 7.4.
+* [Compatibility] – Tested OK with WordPress 7.1.4
+* [Compatibility] – Tested OK with WooCommerce 11.3.0.

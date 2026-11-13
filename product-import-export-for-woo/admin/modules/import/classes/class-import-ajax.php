@@ -132,21 +132,36 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import_Ajax
 			$is_file_type_allowed=false;
 			$uploaded_file_name=isset($_FILES['wt_iew_import_file']['name']) ? sanitize_file_name(wp_unslash($_FILES['wt_iew_import_file']['name'])) : '';
 			$ext=isset($uploaded_file_name) ? strtolower(pathinfo($uploaded_file_name, PATHINFO_EXTENSION)) : '';
-			
+
+
 			if(isset($this->import_obj->allowed_import_file_type_mime[$ext])) /* extension exists. */
 			{
 				$is_file_type_allowed=true;
 			}
-			
+
 			if($is_file_type_allowed) /* Allowed file type */
 			{
 				// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
-				@set_time_limit(3600); // 1 hour 
+				@set_time_limit(3600); // 1 hour
 
 				$max_bytes=($this->import_obj->max_import_file_size*1000000); //convert to bytes
 				$size=isset($_FILES['wt_iew_import_file']['size']) ? sanitize_text_field(wp_unslash($_FILES['wt_iew_import_file']['size'])) : 0;
 				if($max_bytes>=$size)
 				{
+					$tmp_name = isset( $_FILES['wt_iew_import_file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['wt_iew_import_file']['tmp_name'] ) ) : '';
+
+					if ( ! function_exists( 'finfo_open' ) || ! function_exists( 'finfo_file' ) ) {
+						$out['status'] = 0;
+						$out['msg']    = __( 'This server is missing a required PHP extension (ext-fileinfo). Please ask your host to enable it before importing files.', 'product-import-export-for-woo' );
+						return $out;
+					}
+
+					if ( ! $tmp_name || ! $this->import_obj->is_file_content_safe( $tmp_name ) ) {
+						$out['status'] = 0;
+						$out['msg']    = __( 'Invalid file content. The uploaded file does not appear to be a valid import file.', 'product-import-export-for-woo' );
+						return $out;
+					}
+
 					$file_name = 'local-file-' . time() . '-' . str_replace( '_', '-', $uploaded_file_name );
                     $file_path = $this->import_obj->get_file_path($file_name);
 

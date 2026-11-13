@@ -571,34 +571,48 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import
 					$file_path = $this->get_file_path($file_name);
 					
 					if($file_dir && $import_dir && strpos($file_dir, $import_dir) === 0) {
+						if ( ! function_exists( 'finfo_open' ) || ! function_exists( 'finfo_file' ) ) {
+							$out['msg'] = __( 'This server is missing a required PHP extension (ext-fileinfo). Please ask your host to enable it before importing files.', 'product-import-export-for-woo' );
+							return $out;
+						}
 						if($file_from == 'local') {
 							if(@copy($local_file_path, $file_path)) {
-								$out = array(
-									'response' => true,
-									'file_name' => $file_name,
-									'msg' => '',
-								);
-							} else {
-								$out['msg'] = __('Unable to create temp file.', 'product-import-export-for-woo');
-							}
-						} else {
-							$file_data=$this->remote_get($file_url);
-							
-							if(!is_wp_error($file_data) && wp_remote_retrieve_response_code($file_data) == 200) {
-								$file_data = wp_remote_retrieve_body($file_data);
-								if(@file_put_contents($file_path, $file_data)) {
+								if ( ! $this->is_file_content_safe( $file_path ) ) {
+									wp_delete_file( $file_path );
+									$out['msg'] = __( 'Invalid file content. The source file does not appear to be a valid import file.', 'product-import-export-for-woo' );
+								} else {
 									$out = array(
 										'response' => true,
 										'file_name' => $file_name,
 										'msg' => '',
 									);
+								}
+							} else {
+								$out['msg'] = __('Unable to create temp file.', 'product-import-export-for-woo');
+							}
+						} else {
+							$file_data=$this->remote_get($file_url);
+
+							if(!is_wp_error($file_data) && wp_remote_retrieve_response_code($file_data) == 200) {
+								$file_data = wp_remote_retrieve_body($file_data);
+								if(@file_put_contents($file_path, $file_data)) {
+									if ( ! $this->is_file_content_safe( $file_path ) ) {
+										wp_delete_file( $file_path );
+										$out['msg'] = __( 'Invalid file content. The downloaded file does not appear to be a valid import file.', 'product-import-export-for-woo' );
+									} else {
+										$out = array(
+											'response' => true,
+											'file_name' => $file_name,
+											'msg' => '',
+										);
+									}
 								} else {
 									$out['msg'] = __('Unable to create temp file.', 'product-import-export-for-woo');
 								}
 							} else {
 								$out['msg'] = __('Unable to fetch file data.', 'product-import-export-for-woo');
 							}
-						}						
+						}
 					} else {
 						$out['msg'] = __('Unable to create temp directory.', 'product-import-export-for-woo');
 					}				
@@ -717,11 +731,71 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import
 	{
 		$ext_arr=explode('.', $file_url);
 		$ext=strtolower(end($ext_arr));
-		if(isset($this->allowed_import_file_type[$ext])) /* file type is in allowed list */ 
+		if(isset($this->allowed_import_file_type[$ext])) /* file type is in allowed list */
 		{
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Content-based sniff that rejects uploads whose detected MIME looks like a disguised binary.
+	 * Fails closed when ext-fileinfo is missing or detection returns an empty value.
+	 *
+	 * @param string $file_path Absolute path to a file already on disk.
+	 * @return bool True when the file's content type is acceptable, false to reject.
+	 */
+	public function is_file_content_safe( $file_path )
+	{
+		if ( ! function_exists( 'finfo_open' ) || ! function_exists( 'finfo_file' ) ) {
+			return false;
+		}
+		$finfo = finfo_open( FILEINFO_MIME_TYPE );
+		if ( false === $finfo ) {
+			return false;
+		}
+		$mime = finfo_file( $finfo, $file_path );
+		if ( empty( $mime ) ) {
+			return false;
+		}
+		$deny_mimes = array(
+			'application/octet-stream',
+			'application/zip',
+			'application/pdf',
+			'application/java',
+			'application/java-archive',
+			'application/x-executable',
+			'application/x-sharedlib',
+			'application/x-mach-binary',
+			'application/x-dosexec',
+			'application/x-msdownload',
+			'application/x-msi',
+			'application/x-php',
+			'application/x-httpd-php',
+			'application/x-perl',
+			'application/x-python',
+			'application/x-sh',
+			'application/x-shellscript',
+			'application/x-tar',
+			'application/x-rar',
+			'application/x-7z-compressed',
+			'application/x-gzip',
+			'application/gzip',
+			'application/vnd.microsoft.portable-executable',
+		);
+		if ( 0 === strpos( $mime, 'image/' ) ) {
+			return false;
+		}
+		if ( 0 === strpos( $mime, 'video/' ) ) {
+			return false;
+		}
+		if ( 0 === strpos( $mime, 'audio/' ) ) {
+			return false;
+		}
+		if ( in_array( $mime, $deny_mimes, true ) ) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
