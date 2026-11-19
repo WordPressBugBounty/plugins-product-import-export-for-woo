@@ -441,6 +441,13 @@ class Wt_Import_Export_For_Woo_Product_Basic_Product_Review_Import {
                         }
                     }
                 }else{
+                    /*
+                     * wp_insert_comment() does not run wp_filter_comment() internally,
+                     * so content and author are stored raw unless we filter here.
+                     * Mirror the update branch (wp_update_comment, which filters) to
+                     * keep the comment kses allowlist enforced on new imported reviews.
+                     */
+                    $postdata = wp_filter_comment($postdata);
                     $post_id = wp_insert_comment($postdata, true);
                 }
 
@@ -527,7 +534,7 @@ class Wt_Import_Export_For_Woo_Product_Basic_Product_Review_Import {
         $return = '';
         if (!$posts_that_exist) {
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $inserted_id = $wpdb->insert('wp_comments', array('comment_ID' =>  $id, 'comment_type' => 'review'));
+            $inserted_id = $wpdb->insert($wpdb->comments, array('comment_ID' =>  $id, 'comment_type' => 'review'));
             if($inserted_id ){
                 $return = $id;
             }

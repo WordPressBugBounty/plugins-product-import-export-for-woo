@@ -2,9 +2,9 @@
 Contributors: webtoffee
 Tags: product export, product import, CSV import export, woocommerce product import, export woocommerce products
 Requires at least: 3.0
-Tested up to: 7.1.4
+Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 2.6.9
+Stable tag: 2.7.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -62,8 +62,8 @@ With this product export import plugin, you can export WooCommerce products and 
 * <strong>Save frequently used import/export configurations</strong> as templates and use the template for future imports and exports.
 * The plugin <strong>stores all the past imports and exports</strong> and <strong>lets you re-run</strong> them when needed.
 * <strong>Easy debugging:</strong> View and download import log for debugging purpose.
-&#9989; Tested OK with WordPress 7.1.4
-&#9989; Tested OK with WooCommerce 11.2.2
+&#9989; Tested OK with WordPress 7.2
+&#9989; Tested OK with WooCommerce 11.3
 &#9989; Tested OK with PHP 8.3
 
 ###COMPATIBLE PLUGINS###
@@ -252,18 +252,16 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 
 == Changelog ==
 
-= 2.6.9 2026-11-13 =
-* [Fix] - Security: hardened CSV export to prevent row injection on re-import via crafted order data. Reported by J Rose (Cavid Gulaliyev).
-* [Update] - Bumped minimum PHP requirement to 7.4.
-* [Compatibility] – Tested OK with WordPress 7.1.4.
-* [Compatibility] – Tested OK with WooCommerce 11.3.0.
+= 2.7.0 2026-11-19 =
+* [Compatibility] - Tested OK with WordPress 7.2-RC2
+* [Compatibility] - Tested OK with WooCommerce 11.3.0
+* [Fix] - Security: hardened product and review import to prevent stored XSS via crafted CSV columns that trigger placeholder re-expansion. Review imports now also pass through the comment content kses filter. Reported by crow via Wordfence.
 
 [See changelog for all versions](https://plugins.svn.wordpress.org/product-import-export-for-woo/trunk/changelog.txt)
 
 == Upgrade Notice ==
 
-= 2.6.9 =
-* [Fix] - Security: hardened CSV export to prevent row injection on re-import via crafted order data. Reported by J Rose (Cavid Gulaliyev).
-* [Update] - Bumped minimum PHP requirement to 7.4.
-* [Compatibility] – Tested OK with WordPress 7.1.4
-* [Compatibility] – Tested OK with WooCommerce 11.3.0.
+= 2.7.0 =
+* [Compatibility] - Tested OK with WordPress 7.2-RC2
+* [Compatibility] - Tested OK with WooCommerce 11.3.0
+* [Fix] - Security: hardened product and review import to prevent stored XSS via crafted CSV columns that trigger placeholder re-expansion. Review imports now also pass through the comment content kses filter. Reported by crow via Wordfence.

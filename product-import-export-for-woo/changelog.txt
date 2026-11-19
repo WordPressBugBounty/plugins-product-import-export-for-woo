@@ -1,6 +1,11 @@
 
 == Changelog ==
 
+= 2.7.0 2026-11-19 =
+* [Compatibility] - Tested OK with WordPress 7.2-RC2
+* [Compatibility] - Tested OK with WooCommerce 11.3.0
+* [Fix] - Security: hardened product and review import to prevent stored XSS via crafted CSV columns that trigger placeholder re-expansion. Review imports now also pass through the comment content kses filter. Reported by crow via Wordfence.
+
 = 2.6.9 2026-11-13 =
 * [Fix] - Security: hardened CSV export to prevent row injection on re-import via crafted order data. Reported by J Rose (Cavid Gulaliyev).
 * [Update] - Bumped minimum PHP requirement to 7.4.

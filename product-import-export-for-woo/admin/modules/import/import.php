@@ -1379,14 +1379,90 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import
 	}
 	protected function evaluate_data($key, $value, $data_row, $mapping_fields, $input_date_format)
 	{
-		$value=$this->add_input_file_data($key, $value, $data_row, $mapping_fields, $input_date_format,true);
+		/*
+		 * Security: build the deferred-token replacement map from the ORIGINAL
+		 * mapping expression before the first pass runs.  After the first pass
+		 * the string may contain {token} strings injected from CSV data; those
+		 * must never be expanded.  Using strtr() ensures substituted text is
+		 * not re-scanned.  (ISCS-514)
+		 */
+		$deferred_map = $this->build_deferred_replacement_map($value, $data_row, $mapping_fields, $input_date_format);
+
+		$value=$this->add_input_file_data($key, $value, $data_row, $mapping_fields, $input_date_format);
 		$value=$this->do_arithmetic($value);
-		if(!Wt_Iew_IE_Basic_Helper::wt_string_is_json($value) && !is_serialized($value)){
-            $value = $this->add_input_file_data($key, $value, $data_row, $mapping_fields, $input_date_format);
-        }
+
+		if(!empty($deferred_map) && !Wt_Iew_IE_Basic_Helper::wt_string_is_json($value) && !is_serialized($value)){
+			$value = strtr($value, $deferred_map);
+		}
+
 		$data_row=null;
 		unset($data_row);
 		return $value;
+	}
+
+	/**
+	 * Scan $template for deferred {token} placeholders and return a map
+	 * of token-string => resolved value.  Only tokens listed in
+	 * skip_from_evaluation_array are included.
+	 *
+	 * @since 2.6.10
+	 */
+	private function build_deferred_replacement_map($template, $data_row, $mapping_fields, $input_date_format)
+	{
+		$re = '/\{([^}]+)\}/m';
+		$matches = array();
+		preg_match_all($re, $template, $matches, PREG_SET_ORDER, 0);
+
+		$map = array();
+		foreach ($matches as $match) {
+			if (!is_array($match) || count($match) <= 1) {
+				continue;
+			}
+
+			$data_key = trim($match[1]);
+
+			if (!in_array($data_key, $this->skip_from_evaluation_array)) {
+				continue;
+			}
+
+			/* Handle date formatting ({field@format}). */
+			$data_key_arr = explode('@', $data_key);
+			$data_format  = '';
+			if (count($data_key_arr) == 2) {
+				$data_key    = $data_key_arr[0];
+				$data_format = $data_key_arr[1];
+			}
+
+			// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.Found -- Preserving existing behavior.
+			if (isset($mapping_fields[$data_key]) && isset($mapping_fields[$data_key][2]) && $mapping_fields[$data_key][2] = 'date') {
+				if ($data_format == '') {
+					$data_format = $input_date_format;
+				}
+			}
+
+			$output_val = isset($data_row[$data_key]) ? $data_row[$data_key] : '';
+
+			/* Date conversion. */
+			if (trim($data_format) != '' && trim($output_val) != '') {
+				if (version_compare(PHP_VERSION, '5.6.0', '>=')) {
+					$date_obj = DateTime::createFromFormat($data_format, $output_val);
+					if ($date_obj) {
+						$output_val = $date_obj->format('Y-m-d H:i:s');
+					}
+				} else {
+					$output_val = gmdate('Y-m-d H:i:s', strtotime(trim(str_replace('/', '-', str_replace('-', '', $output_val)))));
+				}
+			}
+
+			/* Decimal formatting. */
+			if (in_array($data_key, $this->decimal_columns)) {
+				$output_val = wt_format_decimal($output_val);
+			}
+
+			$map[$match[0]] = $output_val;
+		}
+
+		return $map;
 	}
 	protected function do_arithmetic($str)
 	{
@@ -1444,7 +1520,7 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import
 
 		return $val;
 	}
-		protected function add_input_file_data($key, $str, $data_row, $mapping_fields, $input_date_format, $skip_from_evaluation = false)
+		protected function add_input_file_data($key, $str, $data_row, $mapping_fields, $input_date_format)
 		{
 			// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Required for processing large import files
 			@set_time_limit(0);
@@ -1496,14 +1572,9 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import
 						}
 					}
 
-					$is_need_to_replace = false;
-					if ($skip_from_evaluation) {   /* check whether skip or not */
-						if (!in_array($value[1], $this->skip_from_evaluation_array)) {      /*  current item dont skip */
-							$is_need_to_replace = true;
-						}
-					} else { /* no needed to skip, so add all items to find and replace list */
-						$is_need_to_replace = true;
-					}
+					/* Replace non-deferred tokens only; deferred tokens are handled
+					   separately in evaluate_data() via build_deferred_replacement_map(). */
+					$is_need_to_replace = !in_array($value[1], $this->skip_from_evaluation_array);
 					if ($is_need_to_replace) {
 						if (in_array($value[1], $this->decimal_columns)) { /* check if it is a decimal column , if yes, format it */
 							$output_val =  wt_format_decimal($output_val);
@@ -1516,7 +1587,12 @@ class Wt_Import_Export_For_Woo_Product_Basic_Import
 			}
 			$data_row = null;
 			unset($data_row);
-			return str_replace($find, $replace, $str);
+			/* strtr() replaces in parallel and never re-scans substituted text,
+			   preventing cascading token expansion within a single pass (ISCS-514). */
+			if (!empty($find)) {
+				return strtr($str, array_combine($find, $replace));
+			}
+			return $str;
 		}
 		public function get_skip_from_evaluation()
 		{
